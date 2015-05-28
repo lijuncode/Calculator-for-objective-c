@@ -434,7 +434,7 @@ _numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
         self.numbleLable.text = [NSString stringWithFormat:@"%.8f",_result];
         
         // 从最后一位开始判断小数点后数字的值，如果最后一位位0，则删除
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             // 取出最后的一个字符
             char s = [self.numbleLable.text characterAtIndex:(self.numbleLable.text.length-1)];
             // 判断最后一个字符
