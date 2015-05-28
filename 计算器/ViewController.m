@@ -23,16 +23,11 @@ typedef enum{
 
 @interface ViewController ()
 
-@property (nonatomic , copy) NSString *num1; // 接收第一个数字
-@property (nonatomic , copy) NSString *num2; // 接收第二个数字
-@property (nonatomic , strong ) UILabel *numbleLable; //显示
+@property (nonatomic, copy) NSString *num1; // 接收第一个数字
+@property (nonatomic, copy) NSString *num2; // 接收第二个数字
+@property (nonatomic, weak) UILabel *numbleLable; //显示
 @property (nonatomic, copy) NSMutableString *numString; // 接受按键输入的数字
-
-//@property (nonatomic) int index; // 标记运算符类型
-
 @property (nonatomic)  double result; // 接受运算结果
-
-//@property (nonatomic) int index1; // 标记按钮类型（0为数字，1为运算符，2为等于号）
 
 @property (nonatomic) calculateMode calculateMode; // 标记运算符类型
 @property (nonatomic) buttonMode buttonMode;  // 标记按钮类型
@@ -40,6 +35,28 @@ typedef enum{
 @end
 
 @implementation ViewController
+
+#pragma mark - 懒加载显示label
+
+- (UILabel *)numbleLable{
+    if (!_numbleLable) {
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
+        self.numbleLable = label;
+        // 不能用下面这句初始化，因为右边这句是必须是一个强指针引用，但左边设置的是weak弱指针。
+        //  self.numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
+        [self.numbleLable setBackgroundColor:[UIColor blackColor]];
+        self.numbleLable.textColor = [UIColor whiteColor];
+        [self.numbleLable setTextAlignment:NSTextAlignmentRight];
+        
+        [self fontOfNumbleLabel];
+        self.numbleLable.numberOfLines = 0;
+        
+        [self.view addSubview:self.numbleLable];
+    }
+    return _numbleLable;
+}
+
+#pragma mark - numString
 
 - (NSMutableString *)numString{
     if (!_numString) {
@@ -49,12 +66,14 @@ typedef enum{
     return _numString;
 }
 
+#pragma mark - 接收数字键盘的输入
+
 - (void)numbleView:(UIButton *)but
 {
    // 判断按键是数字还是点还是等号
     if (but.tag < 10) {
         // 按键是数字
-#pragma mark - 接受输入的数字
+#pragma mark  接受输入的数字
         // 为了避免当numstring为@“0”时，出现“09”的情况
         if ([self.numString isEqual:@"0"]) {
             NSRange range = [self.numString rangeOfString:@"0"];
@@ -70,7 +89,7 @@ typedef enum{
         self.buttonMode = numbleButton;
         
     }else if(but.tag == 10){
-        
+#pragma mark 接收点号
         // 按键是点号
         // 判断是否已经有“.”了，如果有，则点击无效。
         NSRange range = [self.numString rangeOfString:@"."];
@@ -86,7 +105,8 @@ typedef enum{
        self.numbleLable.text = self.numString;
     }else{
         
-        // 按键是等号
+#pragma mark 接收等号
+     // 按键是等号
         // 判断前一个按键是啥
         if (self.buttonMode == equalButton) {
             
@@ -120,19 +140,18 @@ typedef enum{
     // 变换字体大小
     [self fontOfNumbleLabel];
    
-   
 }
+
+#pragma mark - 加载视图
 
 - (void)viewDidLoad {
     [super viewDidLoad];
  
-#pragma mark - 设置数字按钮
+#pragma mark 设置数字按钮
     UIView *numbleView = [[UIView alloc] init];
     [numbleView setFrame:CGRectMake(0, (568-80*4), 240, 320)];
     
     [numbleView setBackgroundColor:[UIColor blueColor]];
-    
-    
     
     [self.view addSubview:numbleView];
     
@@ -204,7 +223,7 @@ typedef enum{
 
     }
     
-#pragma mark - 设置运算符button
+#pragma mark 设置运算符button
     
     UIView *countView = [[UIView alloc] init];
     [countView setFrame:CGRectMake(240, (568-80*4), 80, 320)];
@@ -233,57 +252,30 @@ typedef enum{
             case 15:
                 [countButton setTitle:@"+" forState:UIControlStateNormal];
                 break;
-
-
         }
+        
         [countButton setTitleColor:[UIColor blackColor] forState:UIControlStateHighlighted];
         countButton.titleLabel.font = [UIFont systemFontOfSize:28];
         [countButton.layer setMasksToBounds:YES];
         [countButton.layer setBorderWidth:0.5];
         
+        // 设置边框
         CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
-        
         CGColorRef color = CGColorCreate(colorSpaceRef, (CGFloat[]){1,1,1,1});
-        
         [countButton.layer setBorderColor:color];
         
         [countView addSubview:countButton];
         
         [countButton addTarget:self action:@selector(count:) forControlEvents:UIControlEventTouchUpInside];
         
-        
     }
     
+#pragma mark 设置显示label
     
+    self.numbleLable.text = self.numString;
+
     
-    
-#pragma mark - 设置显示label
-    
-_numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
-    
-    [_numbleLable setBackgroundColor:[UIColor blackColor]];
-        
-    _numbleLable.text = @"0";
-    _numbleLable.textColor = [UIColor whiteColor];
-    [_numbleLable setTextAlignment:NSTextAlignmentRight];
-    
-    [self fontOfNumbleLabel];
-    
-//    if (_numbleLable.text.length < 12) {
-//        
-//    _numbleLable.font = [UIFont systemFontOfSize:50.0];
-//    }else if (_numbleLable.text.length > 11 ){
-//        _numbleLable.font = [UIFont systemFontOfSize:30.0];
-//    }
-    
-    // 设置label的文字可显示的行数，0代表无限行数
-    _numbleLable.numberOfLines = 0;
-    [_numbleLable setLineBreakMode:NSLineBreakByClipping];
-   // _numbleLable.adjustsFontSizeToFitWidth = YES;
-    
-    [self.view addSubview:_numbleLable];
-    
-#pragma mark - 设置删除按钮
+#pragma mark 设置删除按钮
     
     UIButton *cut = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
     
@@ -297,41 +289,54 @@ _numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
 
 - (void)cut{
     
-    if (self.buttonMode != numbleButton) {
+    if (self.buttonMode == numbleButton) {
         
-        // 前一个按键不是数字按键，将所有内容清空
-        self.numbleLable.text = @"0";
-        self.num1 = nil;
-        self.num2 = nil;
-        self.calculateMode = non;
-        self.buttonMode = numbleButton;
-        self.result =0;
-        [self clearNubleString];
+        // 前一个按键是数字按键，则只需要删除最后一个字符，
+        [self removeLastNumble];
         
     }else{
-    
-        // 前一个按键是数字按键，则只需要删除最后一个字符，
-        //如果只有一个字符，则将label设置为0，清空numstring；
         
-        if (self.numString.length == 1 ) {
-            self.numbleLable.text = @"0";
-            self.numString = nil;
-        }else {
-            
-            // 如果不止一个字符则删除最后一个字符
-            NSRange range = {self.numString.length - 1,1};
-            [self.numString deleteCharactersInRange:range];
-            self.numbleLable.text = self.numString;
+        // 如果前一个按键不是数字键，则清零复位
+        [self reset];
         
-        }
     }
-    
-    
     
     // 数字有变化，要变换字体
     [self fontOfNumbleLabel];
     
+}
+
+#pragma mark - 删除lable中最后一位数字
+
+- (void)removeLastNumble{
     
+    //如果只有一个字符，则将label设置为0，清空numstring；
+    
+    if (self.numString.length == 1 ) {
+        self.numbleLable.text = @"0";
+        self.numString = nil;
+    }else {
+        
+        // 如果不止一个字符则删除最后一个字符
+        NSRange range = {self.numString.length - 1,1};
+        [self.numString deleteCharactersInRange:range];
+        self.numbleLable.text = self.numString;
+        
+    }
+
+}
+
+#pragma mark - 复位，所有内容归零
+
+- (void)reset{
+    
+    self.numbleLable.text = @"0";
+    self.num1 = nil;
+    self.num2 = nil;
+    self.calculateMode = non;
+    self.buttonMode = numbleButton;
+    self.result =0;
+    [self clearNubleString];
 }
 
 #pragma mark - 设置运算符监听方法
@@ -387,12 +392,12 @@ _numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
 
 #pragma mark - 更改label的字体
 - (void)fontOfNumbleLabel{
-    if (_numbleLable.text.length < 9) {
-        _numbleLable.font = [UIFont systemFontOfSize:60.0];
-    }else if (_numbleLable.text.length > 8 && _numbleLable.text.length < 11 ){
-        _numbleLable.font = [UIFont systemFontOfSize:50.0];
-    }else if (_numbleLable.text.length > 10){
-        _numbleLable.font = [UIFont systemFontOfSize:40.0];
+    if (self.numbleLable.text.length < 9) {
+        self.numbleLable.font = [UIFont systemFontOfSize:60.0];
+    }else if (self.numbleLable.text.length > 8 && self.numbleLable.text.length < 11 ){
+        self.numbleLable.font = [UIFont systemFontOfSize:50.0];
+    }else if (self.numbleLable.text.length > 10){
+        self.numbleLable.font = [UIFont systemFontOfSize:40.0];
     }
     
 }
@@ -403,10 +408,10 @@ _numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
     self.numString = nil;
 }
 
-
 #pragma mark - 运算方法
 - (void)calculate{
     
+    // 根据当前的运算符做运算
     switch (self.calculateMode) {
         case division:
             _result = [self.num1 doubleValue]/[self.num2 doubleValue];
@@ -427,29 +432,34 @@ _numbleLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 248)];
             
     }
     
+    // 将运算结果显示在label上
+    [self showResult];
+    
+}
+
+#pragma mark - 将结果显示在label上
+- (void)showResult{
+    
     if ((long)self.result == self.result) {
         self.numbleLable.text = [NSString stringWithFormat:@"%ld",(long)_result];
     }else{
         
         self.numbleLable.text = [NSString stringWithFormat:@"%.8f",_result];
+        NSString *tempString = [[NSString alloc] initWithString:self.numbleLable.text];
         
         // 从最后一位开始判断小数点后数字的值，如果最后一位位0，则删除
         for (int i = 0; i < 9; i++) {
             // 取出最后的一个字符
             char s = [self.numbleLable.text characterAtIndex:(self.numbleLable.text.length-1)];
             // 判断最后一个字符
-            if (s == '0' || s == '.') {
-                NSString *string = [self.numbleLable.text substringToIndex:self.numbleLable.text.length - 1];
-                self.numbleLable.text = string;
+             if (s == '0' || s == '.') {
+                tempString = [self.numbleLable.text substringToIndex:(self.numbleLable.text.length-1)];
+                 self.numbleLable.text = tempString;
+
             }
-            
-            
         }
-        
     }
 
-   
-    
 }
 
 @end
